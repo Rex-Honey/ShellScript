@@ -42,7 +42,7 @@
 # - DRUG (7,262 records)
 # - PRESETMESSAGES (116 records)
 # - WINMAIL_RECEIVED (1,013 records)
-#
+
 # TABLES SKIPPED IN DEFAULT MODE (10 large tables):
 # - CHANGES (103,688 records)
 # - CHGDRUG (163,436 records)
@@ -58,7 +58,7 @@
 
 param(
     [hashtable]$TableConfig = @{
-        "Appointment" = "AppID"
+        "Appointment" = "AppID" #working
         "CALLBACK" = "CBID"
         "CHANGES" = "CGID"
         "CHGDRUG" = "CHGDGID"
@@ -179,7 +179,7 @@ function Check-TableChanges {
         }
         elseif ($TableName -eq "RX") {
             if ($FullScan) {
-                $query = "SELECT TOP 4000 [$ColumnName], RXNUM, RXPANUM, RXORIG, RXPREV, RXSTOP, RXDC, RXPLAN, RXDAYS, RXLIM, RXQTY, RXTOTQTY, RXDRUG, RXSIG, RXDIN, RXACT, RXLABELS, RXMEDS, RXDEA, RXDRLAST, RXTYPE, RXPRN, RXVW, RXDATE, RXUPDUSER, RXSTAT, RXQTY1, RXCYCLEDAY, RXDR1ST, RXCOLLEGE, RXCOUNSEL, RXUSE, RXAUTH, RXSUB, RXNOTE, RXLANG, RXCMPD, RXDINS, RXPACMED, RXGUID, AddDatetime, AddUsername, UpdateUsername, UpdateDatetime, RXFOREIGN, RXALERT, RXOTHER, RXERXNUM, RXORIGERXNUM, RXPKG, RXADAPT, RXISERX, RXFREQ, RXWITNESS, RxPINStatus, RxExtNo, RxReleaseDate, RxHoldDate, RxIndication, RXDRFAX, ORIGDR, RxDrWellnetID, RXSIGNID, RXCMPDNAME, RXBILLORDER, RXPRATA, RxFreqNum, RxFreqCode, RxDose, RxDoseUnitCode, RxRouteCode, RxDeviceCode, RxSnomed, RxMaxDispQty, RxMMI, RxServiceCode, RxFolio, RXPACNOTE, RXSIGNED, RXSAFESUPPLY FROM [$TableName] ORDER BY [$ColumnName] DESC"
+                $query = "SELECT TOP 4000 [$ColumnName], RXPANUM, RXORIG, RXPREV, RXSTOP, RXDC, RXPLAN, RXDAYS, RXLIM, RXQTY, RXTOTQTY, RXDRUG, RXSIG, RXDIN, RXACT, RXLABELS, RXMEDS, RXDEA, RXDRLAST, RXTYPE, RXPRN, RXVW, RXDATE, RXUPDUSER, RXSTAT, RXQTY1, RXCYCLEDAY, RXDR1ST, RXCOLLEGE, RXCOUNSEL, RXUSE, RXAUTH, RXSUB, RXNOTE, RXLANG, RXCMPD, RXDINS, RXPACMED, RXGUID, AddDatetime, AddUsername, UpdateUsername, UpdateDatetime, RXFOREIGN, RXALERT, RXOTHER, RXERXNUM, RXORIGERXNUM, RXPKG, RXADAPT, RXISERX, RXFREQ, RXWITNESS, RxPINStatus, RxExtNo, RxReleaseDate, RxHoldDate, RxIndication, RXDRFAX, ORIGDR, RxDrWellnetID, RXSIGNID, RXCMPDNAME, RXBILLORDER, RXPRATA, RxFreqNum, RxFreqCode, RxDose, RxDoseUnitCode, RxRouteCode, RxDeviceCode, RxSnomed, RxMaxDispQty, RxMMI, RxServiceCode, RxFolio, RXPACNOTE, RXSIGNED, RXSAFESUPPLY FROM [$TableName] ORDER BY [$ColumnName] DESC"
             } else {
                 # Skip large table in optimized mode to avoid false positives
                 $query = $null

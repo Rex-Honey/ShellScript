@@ -1,0 +1,146 @@
+# SQL Commands to Enable Change Tracking on winrxProsper Database
+# Run these commands in SQL Server Management Studio (SSMS)
+# Execute them in the order shown below
+
+# =============================================================================
+# STEP 1: Enable Change Tracking on Database
+# =============================================================================
+-- Enable Change Tracking on the winrxProsper database
+ALTER DATABASE [winrxProsper] 
+SET CHANGE_TRACKING = ON 
+(CHANGE_RETENTION = 2 DAYS, AUTO_CLEANUP = ON);
+
+# =============================================================================
+# STEP 2: Enable Change Tracking on Each Table (Alphabetical Order)
+# =============================================================================
+-- Enable Change Tracking on Appointment table
+ALTER TABLE [Appointment] 
+ENABLE CHANGE_TRACKING 
+WITH (TRACK_COLUMNS_UPDATED = ON);
+
+-- Enable Change Tracking on CALLBACK table
+ALTER TABLE [CALLBACK] 
+ENABLE CHANGE_TRACKING 
+WITH (TRACK_COLUMNS_UPDATED = ON);
+
+-- Enable Change Tracking on CHANGES table
+ALTER TABLE [CHANGES] 
+ENABLE CHANGE_TRACKING 
+WITH (TRACK_COLUMNS_UPDATED = ON);
+
+-- Enable Change Tracking on CHGDRUG table
+ALTER TABLE [CHGDRUG] 
+ENABLE CHANGE_TRACKING 
+WITH (TRACK_COLUMNS_UPDATED = ON);
+
+-- Enable Change Tracking on Communications table
+ALTER TABLE [Communications] 
+ENABLE CHANGE_TRACKING 
+WITH (TRACK_COLUMNS_UPDATED = ON);
+
+-- Enable Change Tracking on DOCUMENTS table
+ALTER TABLE [DOCUMENTS] 
+ENABLE CHANGE_TRACKING 
+WITH (TRACK_COLUMNS_UPDATED = ON);
+
+-- Enable Change Tracking on DRUG table
+ALTER TABLE [DRUG] 
+ENABLE CHANGE_TRACKING 
+WITH (TRACK_COLUMNS_UPDATED = ON);
+
+-- Enable Change Tracking on ERX table
+ALTER TABLE [ERX] 
+ENABLE CHANGE_TRACKING 
+WITH (TRACK_COLUMNS_UPDATED = ON);
+
+-- Enable Change Tracking on PACMED table
+ALTER TABLE [PACMED] 
+ENABLE CHANGE_TRACKING 
+WITH (TRACK_COLUMNS_UPDATED = ON);
+
+-- Enable Change Tracking on PATIENT table
+ALTER TABLE [PATIENT] 
+ENABLE CHANGE_TRACKING 
+WITH (TRACK_COLUMNS_UPDATED = ON);
+
+-- Enable Change Tracking on REFILL table
+ALTER TABLE [REFILL] 
+ENABLE CHANGE_TRACKING 
+WITH (TRACK_COLUMNS_UPDATED = ON);
+
+-- Enable Change Tracking on RX table
+ALTER TABLE [RX] 
+ENABLE CHANGE_TRACKING 
+WITH (TRACK_COLUMNS_UPDATED = ON);
+
+-- Enable Change Tracking on TXNS table
+ALTER TABLE [TXNS] 
+ENABLE CHANGE_TRACKING 
+WITH (TRACK_COLUMNS_UPDATED = ON);
+
+# =============================================================================
+# STEP 3: Verification Queries
+# =============================================================================
+
+-- Check if Change Tracking is enabled on database
+SELECT 
+    DB_NAME(database_id) as DatabaseName,
+    is_auto_cleanup_on,
+    retention_period,
+    retention_period_units_desc
+FROM sys.change_tracking_databases 
+WHERE database_id = DB_ID('winrxProsper');
+
+-- Check which tables have Change Tracking enabled
+SELECT 
+    t.name as TableName,
+    ct.is_track_columns_updated_on,
+    ct.begin_version
+FROM sys.tables t
+LEFT JOIN sys.change_tracking_tables ct ON t.object_id = ct.object_id
+WHERE t.name IN (
+    'Appointment', 'CALLBACK', 'CHANGES', 'CHGDRUG', 'Communications', 
+    'DOCUMENTS', 'DRUG', 'ERX', 'PACMED', 'PATIENT', 
+    'REFILL', 'RX', 'TXNS'
+)
+ORDER BY t.name;
+
+-- Get current Change Tracking version
+SELECT CHANGE_TRACKING_CURRENT_VERSION() as CurrentVersion;
+
+# =============================================================================
+# STEP 4: Test Change Tracking (Optional)
+# =============================================================================
+
+-- Test Change Tracking on a small table (be careful with this!)
+-- First, get the current version
+DECLARE @current_version bigint;
+SET @current_version = CHANGE_TRACKING_CURRENT_VERSION();
+SELECT @current_version as CurrentVersion;
+
+-- Make a small test change (uncomment and modify as needed)
+-- UPDATE TOP(1) [Communications] SET Type = Type + ' (test)' WHERE ID = (SELECT TOP 1 ID FROM [Communications]);
+
+-- Check for changes (uncomment after making a test change)
+-- SELECT 
+--     CT.SYS_CHANGE_OPERATION,
+--     CT.SYS_CHANGE_VERSION,
+--     CT.SYS_CHANGE_CREATION_VERSION,
+--     CT.SYS_CHANGE_COLUMNS,
+--     CT.ID
+-- FROM CHANGETABLE(CHANGES [Communications], @current_version) AS CT;
+
+# =============================================================================
+# IMPORTANT NOTES:
+# =============================================================================
+# 1. Run the database command first - This must be done before enabling on tables
+# 2. TRACK_COLUMNS_UPDATED = ON - This tells you exactly which columns changed
+# 3. CHANGE_RETENTION = 2 DAYS - Change data is kept for 2 days, then auto-cleaned
+# 4. AUTO_CLEANUP = ON - Old change data is automatically removed
+# 5. No downtime - These commands don't require stopping your application
+# 
+# If You Get Errors:
+# - Permission errors: Make sure you're running as a user with ALTER permissions
+# - Table doesn't exist: Check the exact table names in your database
+# - Already enabled: If Change Tracking is already enabled, you'll get an error - that's normal
+# =============================================================================
