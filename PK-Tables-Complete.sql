@@ -283,7 +283,7 @@ BEGIN
     IF UPDATE(AppCreatedDateTime) SET @ChangedColumns = @ChangedColumns + 'AppCreatedDateTime, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
@@ -387,7 +387,7 @@ BEGIN
     IF UPDATE(CBCOMID) SET @ChangedColumns = @ChangedColumns + 'CBCOMID, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
@@ -496,7 +496,7 @@ BEGIN
     IF UPDATE(CGDIN) SET @ChangedColumns = @ChangedColumns + 'CGDIN, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
@@ -599,7 +599,7 @@ BEGIN
     IF UPDATE(ORDERSTATUS) SET @ChangedColumns = @ChangedColumns + 'ORDERSTATUS, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
@@ -694,7 +694,7 @@ BEGIN
     IF UPDATE(Resource) SET @ChangedColumns = @ChangedColumns + 'Resource, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
@@ -794,7 +794,7 @@ BEGIN
     IF UPDATE(DTNOTE) SET @ChangedColumns = @ChangedColumns + 'DTNOTE, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
@@ -987,7 +987,7 @@ BEGIN
     IF UPDATE(DGCMPDPRICE) SET @ChangedColumns = @ChangedColumns + 'DGCMPDPRICE, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
@@ -1152,7 +1152,7 @@ BEGIN
     IF UPDATE(XPickUp) SET @ChangedColumns = @ChangedColumns + 'XPickUp, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
@@ -1244,7 +1244,7 @@ BEGIN
     IF UPDATE(Id) SET @ChangedColumns = @ChangedColumns + 'Id, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
@@ -1336,7 +1336,7 @@ BEGIN
     IF UPDATE(PANUM) SET @ChangedColumns = @ChangedColumns + 'PANUM, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
@@ -1428,7 +1428,7 @@ BEGIN
     IF UPDATE(REFILLID) SET @ChangedColumns = @ChangedColumns + 'REFILLID, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
@@ -1520,7 +1520,7 @@ BEGIN
     IF UPDATE(RXNUM) SET @ChangedColumns = @ChangedColumns + 'RXNUM, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
@@ -1612,7 +1612,7 @@ BEGIN
     IF UPDATE(TXNSID) SET @ChangedColumns = @ChangedColumns + 'TXNSID, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
@@ -1717,7 +1717,7 @@ BEGIN
     IF UPDATE(SCCARRY) SET @ChangedColumns = @ChangedColumns + 'SCCARRY, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
