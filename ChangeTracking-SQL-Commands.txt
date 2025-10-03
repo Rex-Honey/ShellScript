@@ -122,13 +122,452 @@ SELECT @current_version as CurrentVersion;
 -- UPDATE TOP(1) [Communications] SET Type = Type + ' (test)' WHERE ID = (SELECT TOP 1 ID FROM [Communications]);
 
 -- Check for changes (uncomment after making a test change)
--- SELECT 
---     CT.SYS_CHANGE_OPERATION,
---     CT.SYS_CHANGE_VERSION,
---     CT.SYS_CHANGE_CREATION_VERSION,
---     CT.SYS_CHANGE_COLUMNS,
---     CT.ID
--- FROM CHANGETABLE(CHANGES [Communications], @current_version) AS CT;
+SELECT 
+    CT.SYS_CHANGE_OPERATION,
+    CT.SYS_CHANGE_VERSION,
+    CT.SYS_CHANGE_CREATION_VERSION,
+    CT.SYS_CHANGE_COLUMNS,
+    CT.ID
+FROM CHANGETABLE(CHANGES [Communications], @current_version) AS CT;
+
+# =============================================================================
+# STEP 5: Change Tracking Monitoring Queries
+# =============================================================================
+
+# Get Current Change Tracking Version
+SELECT CHANGE_TRACKING_CURRENT_VERSION() AS CurrentVersion;
+
+# =============================================================================
+# MONITORING QUERIES FOR ALL TABLES
+# =============================================================================
+
+# 1. APPOINTMENT TABLE CHANGES
+DECLARE @last_sync_version bigint = 0;
+SELECT 
+    CT.SYS_CHANGE_OPERATION,
+    CT.SYS_CHANGE_VERSION,
+    CT.SYS_CHANGE_CREATION_VERSION,
+    CT.SYS_CHANGE_COLUMNS,
+    CT.AppID,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    A.*
+FROM CHANGETABLE(CHANGES [Appointment], @last_sync_version) AS CT
+LEFT JOIN [Appointment] A ON CT.AppID = A.AppID
+ORDER BY CT.SYS_CHANGE_VERSION;
+
+# 2. CALLBACK TABLE CHANGES
+DECLARE @last_sync_version bigint = 0;
+SELECT 
+    CT.SYS_CHANGE_OPERATION,
+    CT.SYS_CHANGE_VERSION,
+    CT.SYS_CHANGE_CREATION_VERSION,
+    CT.SYS_CHANGE_COLUMNS,
+    CT.CBID,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    C.*
+FROM CHANGETABLE(CHANGES [CALLBACK], @last_sync_version) AS CT
+LEFT JOIN [CALLBACK] C ON CT.CBID = C.CBID
+ORDER BY CT.SYS_CHANGE_VERSION;
+
+# 3. CHANGES TABLE CHANGES
+DECLARE @last_sync_version bigint = 0;
+SELECT 
+    CT.SYS_CHANGE_OPERATION,
+    CT.SYS_CHANGE_VERSION,
+    CT.SYS_CHANGE_CREATION_VERSION,
+    CT.SYS_CHANGE_COLUMNS,
+    CT.CGID,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    CH.*
+FROM CHANGETABLE(CHANGES [CHANGES], @last_sync_version) AS CT
+LEFT JOIN [CHANGES] CH ON CT.CGID = CH.CGID
+ORDER BY CT.SYS_CHANGE_VERSION;
+
+# 4. CHGDRUG TABLE CHANGES
+DECLARE @last_sync_version bigint = 0;
+SELECT 
+    CT.SYS_CHANGE_OPERATION,
+    CT.SYS_CHANGE_VERSION,
+    CT.SYS_CHANGE_CREATION_VERSION,
+    CT.SYS_CHANGE_COLUMNS,
+    CT.CHGDGID,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    CD.*
+FROM CHANGETABLE(CHANGES [CHGDRUG], @last_sync_version) AS CT
+LEFT JOIN [CHGDRUG] CD ON CT.CHGDGID = CD.CHGDGID
+ORDER BY CT.SYS_CHANGE_VERSION;
+
+# 5. COMMUNICATIONS TABLE CHANGES
+DECLARE @last_sync_version bigint = 0;
+SELECT 
+    CT.SYS_CHANGE_OPERATION,
+    CT.SYS_CHANGE_VERSION,
+    CT.SYS_CHANGE_CREATION_VERSION,
+    CT.SYS_CHANGE_COLUMNS,
+    CT.ID,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    COM.*
+FROM CHANGETABLE(CHANGES [Communications], @last_sync_version) AS CT
+LEFT JOIN [Communications] COM ON CT.ID = COM.ID
+ORDER BY CT.SYS_CHANGE_VERSION;
+
+# 6. DOCUMENTS TABLE CHANGES
+DECLARE @last_sync_version bigint = 0;
+SELECT 
+    CT.SYS_CHANGE_OPERATION,
+    CT.SYS_CHANGE_VERSION,
+    CT.SYS_CHANGE_CREATION_VERSION,
+    CT.SYS_CHANGE_COLUMNS,
+    CT.ID,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    D.*
+FROM CHANGETABLE(CHANGES [DOCUMENTS], @last_sync_version) AS CT
+LEFT JOIN [DOCUMENTS] D ON CT.ID = D.ID
+ORDER BY CT.SYS_CHANGE_VERSION;
+
+# 7. DRUG TABLE CHANGES
+DECLARE @last_sync_version bigint = 0;
+SELECT 
+    CT.SYS_CHANGE_OPERATION,
+    CT.SYS_CHANGE_VERSION,
+    CT.SYS_CHANGE_CREATION_VERSION,
+    CT.SYS_CHANGE_COLUMNS,
+    CT.DGDIN,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    DR.*
+FROM CHANGETABLE(CHANGES [DRUG], @last_sync_version) AS CT
+LEFT JOIN [DRUG] DR ON CT.DGDIN = DR.DGDIN
+ORDER BY CT.SYS_CHANGE_VERSION;
+
+# 8. ERX TABLE CHANGES
+DECLARE @last_sync_version bigint = 0;
+SELECT 
+    CT.SYS_CHANGE_OPERATION,
+    CT.SYS_CHANGE_VERSION,
+    CT.SYS_CHANGE_CREATION_VERSION,
+    CT.SYS_CHANGE_COLUMNS,
+    CT.XKEY,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    E.*
+FROM CHANGETABLE(CHANGES [ERX], @last_sync_version) AS CT
+LEFT JOIN [ERX] E ON CT.XKEY = E.XKEY
+ORDER BY CT.SYS_CHANGE_VERSION;
+
+# 9. PACMED TABLE CHANGES
+DECLARE @last_sync_version bigint = 0;
+SELECT 
+    CT.SYS_CHANGE_OPERATION,
+    CT.SYS_CHANGE_VERSION,
+    CT.SYS_CHANGE_CREATION_VERSION,
+    CT.SYS_CHANGE_COLUMNS,
+    CT.Id,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    P.*
+FROM CHANGETABLE(CHANGES [PACMED], @last_sync_version) AS CT
+LEFT JOIN [PACMED] P ON CT.Id = P.Id
+ORDER BY CT.SYS_CHANGE_VERSION;
+
+# 10. PATIENT TABLE CHANGES
+DECLARE @last_sync_version bigint = 0;
+SELECT 
+    CT.SYS_CHANGE_OPERATION,
+    CT.SYS_CHANGE_VERSION,
+    CT.SYS_CHANGE_CREATION_VERSION,
+    CT.SYS_CHANGE_COLUMNS,
+    CT.PANUM,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    PT.*
+FROM CHANGETABLE(CHANGES [PATIENT], @last_sync_version) AS CT
+LEFT JOIN [PATIENT] PT ON CT.PANUM = PT.PANUM
+ORDER BY CT.SYS_CHANGE_VERSION;
+
+# 11. REFILL TABLE CHANGES
+DECLARE @last_sync_version bigint = 0;
+SELECT 
+    CT.SYS_CHANGE_OPERATION,
+    CT.SYS_CHANGE_VERSION,
+    CT.SYS_CHANGE_CREATION_VERSION,
+    CT.SYS_CHANGE_COLUMNS,
+    CT.REFILLID,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    R.*
+FROM CHANGETABLE(CHANGES [REFILL], @last_sync_version) AS CT
+LEFT JOIN [REFILL] R ON CT.REFILLID = R.REFILLID
+ORDER BY CT.SYS_CHANGE_VERSION;
+
+# 12. RX TABLE CHANGES
+DECLARE @last_sync_version bigint = 0;
+SELECT 
+    CT.SYS_CHANGE_OPERATION,
+    CT.SYS_CHANGE_VERSION,
+    CT.SYS_CHANGE_CREATION_VERSION,
+    CT.SYS_CHANGE_COLUMNS,
+    CT.RXNUM,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    RX.*
+FROM CHANGETABLE(CHANGES [RX], @last_sync_version) AS CT
+LEFT JOIN [RX] RX ON CT.RXNUM = RX.RXNUM
+ORDER BY CT.SYS_CHANGE_VERSION;
+
+# 13. TXNS TABLE CHANGES
+DECLARE @last_sync_version bigint = 0;
+SELECT 
+    CT.SYS_CHANGE_OPERATION,
+    CT.SYS_CHANGE_VERSION,
+    CT.SYS_CHANGE_CREATION_VERSION,
+    CT.SYS_CHANGE_COLUMNS,
+    CT.TXNSID,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    T.*
+FROM CHANGETABLE(CHANGES [TXNS], @last_sync_version) AS CT
+LEFT JOIN [TXNS] T ON CT.TXNSID = T.TXNSID
+ORDER BY CT.SYS_CHANGE_VERSION;
+
+# =============================================================================
+# STEP 6: Advanced Monitoring Queries
+# =============================================================================
+
+# Get Changes Summary for All Tables
+DECLARE @last_sync_version bigint = 0;
+
+SELECT 'Appointment' AS TableName, COUNT(*) AS ChangeCount
+FROM CHANGETABLE(CHANGES [Appointment], @last_sync_version)
+UNION ALL
+SELECT 'CALLBACK' AS TableName, COUNT(*) AS ChangeCount
+FROM CHANGETABLE(CHANGES [CALLBACK], @last_sync_version)
+UNION ALL
+SELECT 'CHANGES' AS TableName, COUNT(*) AS ChangeCount
+FROM CHANGETABLE(CHANGES [CHANGES], @last_sync_version)
+UNION ALL
+SELECT 'CHGDRUG' AS TableName, COUNT(*) AS ChangeCount
+FROM CHANGETABLE(CHANGES [CHGDRUG], @last_sync_version)
+UNION ALL
+SELECT 'Communications' AS TableName, COUNT(*) AS ChangeCount
+FROM CHANGETABLE(CHANGES [Communications], @last_sync_version)
+UNION ALL
+SELECT 'DOCUMENTS' AS TableName, COUNT(*) AS ChangeCount
+FROM CHANGETABLE(CHANGES [DOCUMENTS], @last_sync_version)
+UNION ALL
+SELECT 'DRUG' AS TableName, COUNT(*) AS ChangeCount
+FROM CHANGETABLE(CHANGES [DRUG], @last_sync_version)
+UNION ALL
+SELECT 'ERX' AS TableName, COUNT(*) AS ChangeCount
+FROM CHANGETABLE(CHANGES [ERX], @last_sync_version)
+UNION ALL
+SELECT 'PACMED' AS TableName, COUNT(*) AS ChangeCount
+FROM CHANGETABLE(CHANGES [PACMED], @last_sync_version)
+UNION ALL
+SELECT 'PATIENT' AS TableName, COUNT(*) AS ChangeCount
+FROM CHANGETABLE(CHANGES [PATIENT], @last_sync_version)
+UNION ALL
+SELECT 'REFILL' AS TableName, COUNT(*) AS ChangeCount
+FROM CHANGETABLE(CHANGES [REFILL], @last_sync_version)
+UNION ALL
+SELECT 'RX' AS TableName, COUNT(*) AS ChangeCount
+FROM CHANGETABLE(CHANGES [RX], @last_sync_version)
+UNION ALL
+SELECT 'TXNS' AS TableName, COUNT(*) AS ChangeCount
+FROM CHANGETABLE(CHANGES [TXNS], @last_sync_version)
+ORDER BY ChangeCount DESC;
+
+# Get Changes by Operation Type for All Tables
+DECLARE @last_sync_version bigint = 0;
+
+SELECT 
+    'Appointment' AS TableName,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    COUNT(*) AS Change_Count
+FROM CHANGETABLE(CHANGES [Appointment], @last_sync_version) AS CT
+GROUP BY CT.SYS_CHANGE_OPERATION
+UNION ALL
+SELECT 
+    'CALLBACK' AS TableName,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    COUNT(*) AS Change_Count
+FROM CHANGETABLE(CHANGES [CALLBACK], @last_sync_version) AS CT
+GROUP BY CT.SYS_CHANGE_OPERATION
+UNION ALL
+SELECT 
+    'CHANGES' AS TableName,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    COUNT(*) AS Change_Count
+FROM CHANGETABLE(CHANGES [CHANGES], @last_sync_version) AS CT
+GROUP BY CT.SYS_CHANGE_OPERATION
+UNION ALL
+SELECT 
+    'CHGDRUG' AS TableName,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    COUNT(*) AS Change_Count
+FROM CHANGETABLE(CHANGES [CHGDRUG], @last_sync_version) AS CT
+GROUP BY CT.SYS_CHANGE_OPERATION
+UNION ALL
+SELECT 
+    'Communications' AS TableName,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    COUNT(*) AS Change_Count
+FROM CHANGETABLE(CHANGES [Communications], @last_sync_version) AS CT
+GROUP BY CT.SYS_CHANGE_OPERATION
+UNION ALL
+SELECT 
+    'DOCUMENTS' AS TableName,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    COUNT(*) AS Change_Count
+FROM CHANGETABLE(CHANGES [DOCUMENTS], @last_sync_version) AS CT
+GROUP BY CT.SYS_CHANGE_OPERATION
+UNION ALL
+SELECT 
+    'DRUG' AS TableName,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    COUNT(*) AS Change_Count
+FROM CHANGETABLE(CHANGES [DRUG], @last_sync_version) AS CT
+GROUP BY CT.SYS_CHANGE_OPERATION
+UNION ALL
+SELECT 
+    'ERX' AS TableName,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    COUNT(*) AS Change_Count
+FROM CHANGETABLE(CHANGES [ERX], @last_sync_version) AS CT
+GROUP BY CT.SYS_CHANGE_OPERATION
+UNION ALL
+SELECT 
+    'PACMED' AS TableName,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    COUNT(*) AS Change_Count
+FROM CHANGETABLE(CHANGES [PACMED], @last_sync_version) AS CT
+GROUP BY CT.SYS_CHANGE_OPERATION
+UNION ALL
+SELECT 
+    'PATIENT' AS TableName,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    COUNT(*) AS Change_Count
+FROM CHANGETABLE(CHANGES [PATIENT], @last_sync_version) AS CT
+GROUP BY CT.SYS_CHANGE_OPERATION
+UNION ALL
+SELECT 
+    'REFILL' AS TableName,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    COUNT(*) AS Change_Count
+FROM CHANGETABLE(CHANGES [REFILL], @last_sync_version) AS CT
+GROUP BY CT.SYS_CHANGE_OPERATION
+UNION ALL
+SELECT 
+    'RX' AS TableName,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    COUNT(*) AS Change_Count
+FROM CHANGETABLE(CHANGES [RX], @last_sync_version) AS CT
+GROUP BY CT.SYS_CHANGE_OPERATION
+UNION ALL
+SELECT 
+    'TXNS' AS TableName,
+    CASE 
+        WHEN CT.SYS_CHANGE_OPERATION = 'I' THEN 'INSERT'
+        WHEN CT.SYS_CHANGE_OPERATION = 'U' THEN 'UPDATE'
+        WHEN CT.SYS_CHANGE_OPERATION = 'D' THEN 'DELETE'
+    END AS Operation_Type,
+    COUNT(*) AS Change_Count
+FROM CHANGETABLE(CHANGES [TXNS], @last_sync_version) AS CT
+GROUP BY CT.SYS_CHANGE_OPERATION
+ORDER BY TableName, Operation_Type;
 
 # =============================================================================
 # IMPORTANT NOTES:
@@ -138,6 +577,14 @@ SELECT @current_version as CurrentVersion;
 # 3. CHANGE_RETENTION = 2 DAYS - Change data is kept for 2 days, then auto-cleaned
 # 4. AUTO_CLEANUP = ON - Old change data is automatically removed
 # 5. No downtime - These commands don't require stopping your application
+# 
+# MONITORING TIPS:
+# - Update @last_sync_version with your last known version to see only new changes
+# - Use the summary queries to get an overview of all changes
+# - Each table has its own primary key column (AppID, CBID, CGID, etc.)
+# - SYS_CHANGE_OPERATION: 'I' = INSERT, 'U' = UPDATE, 'D' = DELETE
+# - SYS_CHANGE_VERSION: Sequential version number for each change
+# - SYS_CHANGE_COLUMNS: Bitmask showing which columns changed (for UPDATEs)
 # 
 # If You Get Errors:
 # - Permission errors: Make sure you're running as a user with ALTER permissions
