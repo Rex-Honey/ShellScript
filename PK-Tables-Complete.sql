@@ -6,7 +6,33 @@
 -- DRUG, ERX, PACMED, PATIENT, REFILL, RX, TXNS
 -- =============================================================================
 
+-- =============================================================================
+-- CONFIGURATION - CHANGE DATABASE NAMES HERE
+-- =============================================================================
+-- To change database names in the future:
+-- 1. Change the values below
+-- 2. Find and replace all instances of 'medidozeProsper' with your new audit DB name
+-- 3. Find and replace all instances of 'winrxProsper' with your new main DB name
+-- =============================================================================
+DECLARE @MainDatabase VARCHAR(100) = 'winrxProsper'
+DECLARE @AuditDatabase VARCHAR(100) = 'medidozeProsper'
+-- =============================================================================
+
 USE [winrxProsper]
+GO
+
+-- =============================================================================
+-- CREATE AUDIT DATABASE
+-- =============================================================================
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = @AuditDatabase)
+BEGIN
+    EXEC('CREATE DATABASE [' + @AuditDatabase + ']')
+    PRINT 'Created audit database: ' + @AuditDatabase
+END
+ELSE
+BEGIN
+    PRINT 'Audit database already exists: ' + @AuditDatabase
+END
 GO
 
 -- =============================================================================
@@ -14,10 +40,10 @@ GO
 -- =============================================================================
 
 -- Appointment Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[AppointmentAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[AppointmentAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[AppointmentAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[AppointmentAudit]
 
-CREATE TABLE [dbo].[AppointmentAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[AppointmentAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [AppID] [int] NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -29,10 +55,10 @@ CREATE TABLE [dbo].[AppointmentAudit] (
 )
 
 -- CALLBACK Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[CALLBACKAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[CALLBACKAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[CALLBACKAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[CALLBACKAudit]
 
-CREATE TABLE [dbo].[CALLBACKAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[CALLBACKAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [CBID] [int] NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -44,10 +70,10 @@ CREATE TABLE [dbo].[CALLBACKAudit] (
 )
 
 -- CHANGES Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[CHANGESAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[CHANGESAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[CHANGESAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[CHANGESAudit]
 
-CREATE TABLE [dbo].[CHANGESAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[CHANGESAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [CGID] [int] NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -59,10 +85,10 @@ CREATE TABLE [dbo].[CHANGESAudit] (
 )
 
 -- CHGDRUG Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[CHGDRUGAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[CHGDRUGAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[CHGDRUGAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[CHGDRUGAudit]
 
-CREATE TABLE [dbo].[CHGDRUGAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[CHGDRUGAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [CHGDGID] [int] NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -74,10 +100,10 @@ CREATE TABLE [dbo].[CHGDRUGAudit] (
 )
 
 -- Communications Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[CommunicationsAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[CommunicationsAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[CommunicationsAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[CommunicationsAudit]
 
-CREATE TABLE [dbo].[CommunicationsAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[CommunicationsAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [ID] [int] NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -89,10 +115,10 @@ CREATE TABLE [dbo].[CommunicationsAudit] (
 )
 
 -- DOCUMENTS Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DOCUMENTSAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[DOCUMENTSAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[DOCUMENTSAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[DOCUMENTSAudit]
 
-CREATE TABLE [dbo].[DOCUMENTSAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[DOCUMENTSAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [ID] [int] NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -104,10 +130,10 @@ CREATE TABLE [dbo].[DOCUMENTSAudit] (
 )
 
 -- DRUG Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DRUGAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[DRUGAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[DRUGAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[DRUGAudit]
 
-CREATE TABLE [dbo].[DRUGAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[DRUGAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [DGDIN] [float] NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -119,10 +145,10 @@ CREATE TABLE [dbo].[DRUGAudit] (
 )
 
 -- ERX Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ERXAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[ERXAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[ERXAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[ERXAudit]
 
-CREATE TABLE [dbo].[ERXAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[ERXAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [XKEY] [int] NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -134,10 +160,10 @@ CREATE TABLE [dbo].[ERXAudit] (
 )
 
 -- PACMED Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[PACMEDAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[PACMEDAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[PACMEDAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[PACMEDAudit]
 
-CREATE TABLE [dbo].[PACMEDAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[PACMEDAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [Id] [int] NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -149,10 +175,10 @@ CREATE TABLE [dbo].[PACMEDAudit] (
 )
 
 -- PATIENT Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[PATIENTAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[PATIENTAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[PATIENTAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[PATIENTAudit]
 
-CREATE TABLE [dbo].[PATIENTAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[PATIENTAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [PANUM] [int] NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -164,10 +190,10 @@ CREATE TABLE [dbo].[PATIENTAudit] (
 )
 
 -- REFILL Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[REFILLAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[REFILLAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[REFILLAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[REFILLAudit]
 
-CREATE TABLE [dbo].[REFILLAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[REFILLAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [REFILLID] [int] NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -179,10 +205,10 @@ CREATE TABLE [dbo].[REFILLAudit] (
 )
 
 -- RX Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[RXAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[RXAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[RXAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[RXAudit]
 
-CREATE TABLE [dbo].[RXAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[RXAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [RXNUM] [int] NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -194,10 +220,10 @@ CREATE TABLE [dbo].[RXAudit] (
 )
 
 -- TXNS Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[TXNSAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[TXNSAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[TXNSAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[TXNSAudit]
 
-CREATE TABLE [dbo].[TXNSAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[TXNSAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [TXNSID] [int] NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -209,10 +235,10 @@ CREATE TABLE [dbo].[TXNSAudit] (
 )
 
 -- SCHEDULE Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[SCHEDULEAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[SCHEDULEAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[SCHEDULEAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[SCHEDULEAudit]
 
-CREATE TABLE [dbo].[SCHEDULEAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[SCHEDULEAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [SCID] [int] NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -247,7 +273,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[AppointmentAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[AppointmentAudit] (
         [AppID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -287,7 +313,7 @@ BEGIN
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
-    INSERT INTO [dbo].[AppointmentAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[AppointmentAudit] (
         [AppID], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns]
     )
     SELECT
@@ -311,7 +337,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[AppointmentAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[AppointmentAudit] (
         [AppID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -346,7 +372,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[CALLBACKAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[CALLBACKAudit] (
         [CBID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -391,7 +417,7 @@ BEGIN
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
-    INSERT INTO [dbo].[CALLBACKAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[CALLBACKAudit] (
         [CBID], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns]
     )
     SELECT
@@ -415,7 +441,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[CALLBACKAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[CALLBACKAudit] (
         [CBID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -450,7 +476,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[CHANGESAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[CHANGESAudit] (
         [CGID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -500,7 +526,7 @@ BEGIN
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
-    INSERT INTO [dbo].[CHANGESAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[CHANGESAudit] (
         [CGID], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns]
     )
     SELECT
@@ -524,7 +550,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[CHANGESAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[CHANGESAudit] (
         [CGID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -563,7 +589,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[CHGDRUGAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[CHGDRUGAudit] (
         [CHGDGID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -603,7 +629,7 @@ BEGIN
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
-    INSERT INTO [dbo].[CHGDRUGAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[CHGDRUGAudit] (
         [CHGDGID], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns]
     )
     SELECT
@@ -627,7 +653,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[CHGDRUGAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[CHGDRUGAudit] (
         [CHGDGID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -662,7 +688,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[CommunicationsAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[CommunicationsAudit] (
         [ID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -698,7 +724,7 @@ BEGIN
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
-    INSERT INTO [dbo].[CommunicationsAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[CommunicationsAudit] (
         [ID], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns]
     )
     SELECT
@@ -722,7 +748,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[CommunicationsAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[CommunicationsAudit] (
         [ID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -757,7 +783,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[DOCUMENTSAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[DOCUMENTSAudit] (
         [ID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -798,7 +824,7 @@ BEGIN
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
-    INSERT INTO [dbo].[DOCUMENTSAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[DOCUMENTSAudit] (
         [ID], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns]
     )
     SELECT
@@ -822,7 +848,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[DOCUMENTSAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[DOCUMENTSAudit] (
         [ID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -857,7 +883,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[DRUGAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[DRUGAudit] (
         [DGDIN], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -991,7 +1017,7 @@ BEGIN
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
-    INSERT INTO [dbo].[DRUGAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[DRUGAudit] (
         [DGDIN], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns]
     )
     SELECT
@@ -1015,7 +1041,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[DRUGAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[DRUGAudit] (
         [DGDIN], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -1054,7 +1080,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[ERXAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[ERXAudit] (
         [XKEY], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -1156,7 +1182,7 @@ BEGIN
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
-    INSERT INTO [dbo].[ERXAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[ERXAudit] (
         [XKEY], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns]
     )
     SELECT
@@ -1180,7 +1206,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[ERXAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[ERXAudit] (
         [XKEY], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -1215,7 +1241,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[PACMEDAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[PACMEDAudit] (
         [Id], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -1248,7 +1274,7 @@ BEGIN
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
-    INSERT INTO [dbo].[PACMEDAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[PACMEDAudit] (
         [Id], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns]
     )
     SELECT
@@ -1272,7 +1298,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[PACMEDAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[PACMEDAudit] (
         [Id], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -1307,7 +1333,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[PATIENTAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[PATIENTAudit] (
         [PANUM], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -1340,7 +1366,7 @@ BEGIN
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
-    INSERT INTO [dbo].[PATIENTAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[PATIENTAudit] (
         [PANUM], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns]
     )
     SELECT
@@ -1364,7 +1390,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[PATIENTAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[PATIENTAudit] (
         [PANUM], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -1399,7 +1425,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[REFILLAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[REFILLAudit] (
         [REFILLID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -1432,7 +1458,7 @@ BEGIN
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
-    INSERT INTO [dbo].[REFILLAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[REFILLAudit] (
         [REFILLID], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns]
     )
     SELECT
@@ -1456,7 +1482,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[REFILLAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[REFILLAudit] (
         [REFILLID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -1491,7 +1517,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[RXAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[RXAudit] (
         [RXNUM], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -1524,7 +1550,7 @@ BEGIN
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
-    INSERT INTO [dbo].[RXAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[RXAudit] (
         [RXNUM], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns]
     )
     SELECT
@@ -1548,7 +1574,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[RXAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[RXAudit] (
         [RXNUM], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -1583,7 +1609,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[TXNSAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[TXNSAudit] (
         [TXNSID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -1616,7 +1642,7 @@ BEGIN
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
-    INSERT INTO [dbo].[TXNSAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[TXNSAudit] (
         [TXNSID], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns]
     )
     SELECT
@@ -1640,7 +1666,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[TXNSAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[TXNSAudit] (
         [TXNSID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -1675,7 +1701,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[SCHEDULEAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[SCHEDULEAudit] (
         [SCID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT
@@ -1721,7 +1747,7 @@ BEGIN
     ELSE
         SET @ChangedColumns = 'No specific columns detected'
     
-    INSERT INTO [dbo].[SCHEDULEAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[SCHEDULEAudit] (
         [SCID], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns]
     )
     SELECT
@@ -1745,7 +1771,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO [dbo].[SCHEDULEAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[SCHEDULEAudit] (
         [SCID], [Operation], [ChangeTime], [UserName], [ChangeDetails]
     )
     SELECT

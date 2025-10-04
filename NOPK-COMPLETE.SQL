@@ -5,7 +5,33 @@
 -- DOCTOR, INTVENT, MMR, PRESETMESSAGES, SIG, SCANS, WINMAIL_RECEIVED
 -- =============================================================================
 
+-- =============================================================================
+-- CONFIGURATION - CHANGE DATABASE NAMES HERE
+-- =============================================================================
+-- To change database names in the future:
+-- 1. Change the values below
+-- 2. Find and replace all instances of 'medidozeProsper' with your new audit DB name
+-- 3. Find and replace all instances of 'winrxProsper' with your new main DB name
+-- =============================================================================
+DECLARE @MainDatabase VARCHAR(100) = 'winrxProsper'
+DECLARE @AuditDatabase VARCHAR(100) = 'medidozeProsper'
+-- =============================================================================
+
 USE [winrxProsper]
+GO
+
+-- =============================================================================
+-- CREATE AUDIT DATABASE
+-- =============================================================================
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = @AuditDatabase)
+BEGIN
+    EXEC('CREATE DATABASE [' + @AuditDatabase + ']')
+    PRINT 'Created audit database: ' + @AuditDatabase
+END
+ELSE
+BEGIN
+    PRINT 'Audit database already exists: ' + @AuditDatabase
+END
 GO
 
 -- =============================================================================
@@ -13,10 +39,10 @@ GO
 -- =============================================================================
 
 -- DOCTOR Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DOCTORAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[DOCTORAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[DOCTORAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[DOCTORAudit]
 
-CREATE TABLE [dbo].[DOCTORAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[DOCTORAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [RowHash] [varchar](64) NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -29,10 +55,10 @@ CREATE TABLE [dbo].[DOCTORAudit] (
 )
 
 -- INTVENT Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[INTVENTAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[INTVENTAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[INTVENTAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[INTVENTAudit]
 
-CREATE TABLE [dbo].[INTVENTAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[INTVENTAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [RowHash] [varchar](64) NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -45,10 +71,10 @@ CREATE TABLE [dbo].[INTVENTAudit] (
 )
 
 -- PRESETMESSAGES Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[PRESETMESSAGESAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[PRESETMESSAGESAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[PRESETMESSAGESAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[PRESETMESSAGESAudit]
 
-CREATE TABLE [dbo].[PRESETMESSAGESAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[PRESETMESSAGESAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [RowHash] [varchar](64) NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -61,10 +87,10 @@ CREATE TABLE [dbo].[PRESETMESSAGESAudit] (
 )
 
 -- SIG Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[SIGAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[SIGAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[SIGAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[SIGAudit]
 
-CREATE TABLE [dbo].[SIGAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[SIGAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [RowHash] [varchar](64) NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -77,10 +103,10 @@ CREATE TABLE [dbo].[SIGAudit] (
 )
 
 -- SCANS Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[SCANSAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[SCANSAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[SCANSAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[SCANSAudit]
 
-CREATE TABLE [dbo].[SCANSAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[SCANSAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [RowHash] [varchar](64) NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -93,10 +119,10 @@ CREATE TABLE [dbo].[SCANSAudit] (
 )
 
 -- WINMAIL_RECEIVED Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[WINMAIL_RECEIVEDAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[WINMAIL_RECEIVEDAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[WINMAIL_RECEIVEDAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[WINMAIL_RECEIVEDAudit]
 
-CREATE TABLE [dbo].[WINMAIL_RECEIVEDAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[WINMAIL_RECEIVEDAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [RowHash] [varchar](64) NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -109,10 +135,10 @@ CREATE TABLE [dbo].[WINMAIL_RECEIVEDAudit] (
 )
 
 -- MMR Audit Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MMRAudit]') AND type in (N'U'))
-    DROP TABLE [dbo].[MMRAudit]
+IF EXISTS (SELECT * FROM medidozeProsper.sys.objects WHERE object_id = OBJECT_ID(N'[medidozeProsper].[dbo].[MMRAudit]') AND type in (N'U'))
+    DROP TABLE [medidozeProsper].[dbo].[MMRAudit]
 
-CREATE TABLE [dbo].[MMRAudit] (
+CREATE TABLE [medidozeProsper].[dbo].[MMRAudit] (
     [AuditID] [int] IDENTITY(1,1) NOT NULL,
     [RowHash] [varchar](64) NULL,
     [Operation] [varchar](10) NOT NULL,
@@ -305,7 +331,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateDOCTORRowHash](@RowData)
     
-    INSERT INTO [dbo].[DOCTORAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[DOCTORAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
     )
     VALUES (
@@ -380,7 +406,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateDOCTORRowHash](@RowData)
     
-    INSERT INTO [dbo].[DOCTORAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[DOCTORAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns], [RowData]
     )
     VALUES (
@@ -427,7 +453,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateDOCTORRowHash](@RowData)
     
-    INSERT INTO [dbo].[DOCTORAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[DOCTORAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
     )
     VALUES (
@@ -474,7 +500,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateINTVENTRowHash](@RowData)
     
-    INSERT INTO [dbo].[INTVENTAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[INTVENTAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
     )
     VALUES (
@@ -519,7 +545,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateINTVENTRowHash](@RowData)
     
-    INSERT INTO [dbo].[INTVENTAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[INTVENTAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns], [RowData]
     )
     VALUES (
@@ -551,7 +577,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateINTVENTRowHash](@RowData)
     
-    INSERT INTO [dbo].[INTVENTAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[INTVENTAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
     )
     VALUES (
@@ -596,7 +622,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GeneratePRESETMESSAGESRowHash](@RowData)
     
-    INSERT INTO [dbo].[PRESETMESSAGESAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[PRESETMESSAGESAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
     )
     VALUES (
@@ -637,7 +663,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GeneratePRESETMESSAGESRowHash](@RowData)
     
-    INSERT INTO [dbo].[PRESETMESSAGESAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[PRESETMESSAGESAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns], [RowData]
     )
     VALUES (
@@ -667,7 +693,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GeneratePRESETMESSAGESRowHash](@RowData)
     
-    INSERT INTO [dbo].[PRESETMESSAGESAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[PRESETMESSAGESAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
     )
     VALUES (
@@ -714,7 +740,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateSIGRowHash](@RowData)
     
-    INSERT INTO [dbo].[SIGAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[SIGAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
     )
     VALUES (
@@ -765,7 +791,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateSIGRowHash](@RowData)
     
-    INSERT INTO [dbo].[SIGAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[SIGAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns], [RowData]
     )
     VALUES (
@@ -800,7 +826,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateSIGRowHash](@RowData)
     
-    INSERT INTO [dbo].[SIGAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[SIGAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
     )
     VALUES (
@@ -849,7 +875,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateSCANSRowHash](@RowData)
     
-    INSERT INTO [dbo].[SCANSAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[SCANSAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
     )
     VALUES (
@@ -904,7 +930,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateSCANSRowHash](@RowData)
     
-    INSERT INTO [dbo].[SCANSAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[SCANSAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns], [RowData]
     )
     VALUES (
@@ -941,7 +967,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateSCANSRowHash](@RowData)
     
-    INSERT INTO [dbo].[SCANSAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[SCANSAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
     )
     VALUES (
@@ -991,7 +1017,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateWINMAIL_RECEIVEDRowHash](@RowData)
     
-    INSERT INTO [dbo].[WINMAIL_RECEIVEDAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[WINMAIL_RECEIVEDAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
     )
     VALUES (
@@ -1048,7 +1074,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateWINMAIL_RECEIVEDRowHash](@RowData)
     
-    INSERT INTO [dbo].[WINMAIL_RECEIVEDAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[WINMAIL_RECEIVEDAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns], [RowData]
     )
     VALUES (
@@ -1086,7 +1112,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateWINMAIL_RECEIVEDRowHash](@RowData)
     
-    INSERT INTO [dbo].[WINMAIL_RECEIVEDAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[WINMAIL_RECEIVEDAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
     )
     VALUES (
@@ -1144,7 +1170,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateMMRRowHash](@RowData)
     
-    INSERT INTO [dbo].[MMRAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[MMRAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
     )
     VALUES (
@@ -1214,7 +1240,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateMMRRowHash](@RowData)
     
-    INSERT INTO [dbo].[MMRAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[MMRAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns], [RowData]
     )
     VALUES (
@@ -1257,7 +1283,7 @@ BEGIN
     
     SET @RowHash = [dbo].[GenerateMMRRowHash](@RowData)
     
-    INSERT INTO [dbo].[MMRAudit] (
+    INSERT INTO [medidozeProsper].[dbo].[MMRAudit] (
         [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
     )
     VALUES (
