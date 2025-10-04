@@ -2,7 +2,7 @@
 -- COMPLETE NO-PK TABLES TRIGGER SOLUTION (SINGLE FILE)
 -- =============================================================================
 -- This script creates triggers for tables without primary keys:
--- DOCTOR, INTVENT, MMR, PRESETMESSAGES, SIG, SCANS
+-- DOCTOR, INTVENT, MMR, PRESETMESSAGES, SIG, SCANS, WINMAIL_RECEIVED
 -- =============================================================================
 
 USE [winrxProsper]
@@ -90,6 +90,38 @@ CREATE TABLE [dbo].[SCANSAudit] (
     [ChangedColumns] [varchar](500) NULL,
     [RowData] [varchar](max) NULL,
     CONSTRAINT [PK_SCANSAudit] PRIMARY KEY ([AuditID])
+)
+
+-- WINMAIL_RECEIVED Audit Table
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[WINMAIL_RECEIVEDAudit]') AND type in (N'U'))
+    DROP TABLE [dbo].[WINMAIL_RECEIVEDAudit]
+
+CREATE TABLE [dbo].[WINMAIL_RECEIVEDAudit] (
+    [AuditID] [int] IDENTITY(1,1) NOT NULL,
+    [RowHash] [varchar](64) NULL,
+    [Operation] [varchar](10) NOT NULL,
+    [ChangeTime] [datetime] NOT NULL,
+    [UserName] [varchar](100) NULL,
+    [ChangeDetails] [varchar](500) NULL,
+    [ChangedColumns] [varchar](500) NULL,
+    [RowData] [varchar](max) NULL,
+    CONSTRAINT [PK_WINMAIL_RECEIVEDAudit] PRIMARY KEY ([AuditID])
+)
+
+-- MMR Audit Table
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MMRAudit]') AND type in (N'U'))
+    DROP TABLE [dbo].[MMRAudit]
+
+CREATE TABLE [dbo].[MMRAudit] (
+    [AuditID] [int] IDENTITY(1,1) NOT NULL,
+    [RowHash] [varchar](64) NULL,
+    [Operation] [varchar](10) NOT NULL,
+    [ChangeTime] [datetime] NOT NULL,
+    [UserName] [varchar](100) NULL,
+    [ChangeDetails] [varchar](500) NULL,
+    [ChangedColumns] [varchar](500) NULL,
+    [RowData] [varchar](max) NULL,
+    CONSTRAINT [PK_MMRAudit] PRIMARY KEY ([AuditID])
 )
 
 PRINT 'Created audit tables for all No-PK tables'
@@ -180,6 +212,40 @@ BEGIN
     DECLARE @Timestamp VARCHAR(20)
     SET @Timestamp = REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(20), GETDATE(), 120), '-', ''), ' ', ''), ':', '')
     SET @Hash = 'SCANS_' + CAST(ABS(CHECKSUM(@RowData)) AS VARCHAR(20)) + '_' + @Timestamp
+    RETURN @Hash
+END
+GO
+
+-- WINMAIL_RECEIVED Hash Function
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GenerateWINMAIL_RECEIVEDRowHash]') AND type in (N'FN', N'IF', N'TF', N'FS', N'FT'))
+    DROP FUNCTION [dbo].[GenerateWINMAIL_RECEIVEDRowHash]
+GO
+
+CREATE FUNCTION [dbo].[GenerateWINMAIL_RECEIVEDRowHash](@RowData VARCHAR(MAX))
+RETURNS VARCHAR(64)
+AS
+BEGIN
+    DECLARE @Hash VARCHAR(64)
+    DECLARE @Timestamp VARCHAR(20)
+    SET @Timestamp = REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(20), GETDATE(), 120), '-', ''), ' ', ''), ':', '')
+    SET @Hash = 'WINMAIL_' + CAST(ABS(CHECKSUM(@RowData)) AS VARCHAR(20)) + '_' + @Timestamp
+    RETURN @Hash
+END
+GO
+
+-- MMR Hash Function
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GenerateMMRRowHash]') AND type in (N'FN', N'IF', N'TF', N'FS', N'FT'))
+    DROP FUNCTION [dbo].[GenerateMMRRowHash]
+GO
+
+CREATE FUNCTION [dbo].[GenerateMMRRowHash](@RowData VARCHAR(MAX))
+RETURNS VARCHAR(64)
+AS
+BEGIN
+    DECLARE @Hash VARCHAR(64)
+    DECLARE @Timestamp VARCHAR(20)
+    SET @Timestamp = REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(20), GETDATE(), 120), '-', ''), ' ', ''), ':', '')
+    SET @Hash = 'MMR_' + CAST(ABS(CHECKSUM(@RowData)) AS VARCHAR(20)) + '_' + @Timestamp
     RETURN @Hash
 END
 GO
@@ -282,7 +348,7 @@ BEGIN
     IF UPDATE(DRWARNING) SET @ChangedColumns = @ChangedColumns + 'DRWARNING, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'Unknown columns'
     
@@ -436,7 +502,7 @@ BEGIN
     IF UPDATE(IVUSER) SET @ChangedColumns = @ChangedColumns + 'IVUSER, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'Unknown columns'
     
@@ -556,7 +622,7 @@ BEGIN
     IF UPDATE(ID) SET @ChangedColumns = @ChangedColumns + 'ID, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'Unknown columns'
     
@@ -679,7 +745,7 @@ BEGIN
     IF UPDATE(SGPHARM) SET @ChangedColumns = @ChangedColumns + 'SGPHARM, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'Unknown columns'
     
@@ -816,7 +882,7 @@ BEGIN
     IF UPDATE(ID) SET @ChangedColumns = @ChangedColumns + 'ID, '
     
     IF LEN(@ChangedColumns) > 0
-        SET @ChangedColumns = LEFT(@ChangedColumns, LEN(@ChangedColumns) - 2)
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
     ELSE
         SET @ChangedColumns = 'Unknown columns'
     
@@ -887,6 +953,325 @@ END
 GO
 
 -- =============================================================================
+-- WINMAIL_RECEIVED TABLE TRIGGERS
+-- =============================================================================
+
+-- Drop existing triggers if they exist
+IF EXISTS (SELECT * FROM sys.triggers WHERE name = 'trg_WINMAIL_RECEIVED_Insert')
+    DROP TRIGGER [trg_WINMAIL_RECEIVED_Insert]
+IF EXISTS (SELECT * FROM sys.triggers WHERE name = 'trg_WINMAIL_RECEIVED_Update')
+    DROP TRIGGER [trg_WINMAIL_RECEIVED_Update]
+IF EXISTS (SELECT * FROM sys.triggers WHERE name = 'trg_WINMAIL_RECEIVED_Delete')
+    DROP TRIGGER [trg_WINMAIL_RECEIVED_Delete]
+
+-- WINMAIL_RECEIVED INSERT Trigger
+CREATE TRIGGER [trg_WINMAIL_RECEIVED_Insert]
+ON [WINMAIL_RECEIVED]
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @RowData VARCHAR(MAX) = ''
+    DECLARE @RowHash VARCHAR(64)
+    
+    SELECT @RowData = 
+        ISNULL(CAST([EntryDate] AS VARCHAR(20)), 'NULL') + '|' +
+        ISNULL(CAST([Guid] AS VARCHAR(36)), 'NULL') + '|' +
+        ISNULL(CAST([NAME] AS VARCHAR(50)), 'NULL') + '|' +
+        ISNULL(CAST([FAXNUM] AS VARCHAR(50)), 'NULL') + '|' +
+        ISNULL(CAST([PAGES] AS VARCHAR(5)), 'NULL') + '|' +
+        ISNULL(CAST([FILENAME] AS VARCHAR(200)), 'NULL') + '|' +
+        ISNULL(CAST([ID] AS VARCHAR(10)), 'NULL') + '|' +
+        ISNULL(CAST([Note] AS VARCHAR(200)), 'NULL') + '|' +
+        ISNULL(CAST([SRFaxID] AS VARCHAR(100)), 'NULL') + '|' +
+        ISNULL(CAST([SRFaxFileName] AS VARCHAR(300)), 'NULL') + '|' +
+        ISNULL(CAST([Unread] AS VARCHAR(10)), 'NULL')
+    FROM inserted
+    
+    SET @RowHash = [dbo].[GenerateWINMAIL_RECEIVEDRowHash](@RowData)
+    
+    INSERT INTO [dbo].[WINMAIL_RECEIVEDAudit] (
+        [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
+    )
+    VALUES (
+        @RowHash, 'INSERT', GETDATE(), SYSTEM_USER, 'New winmail received record added', @RowData
+    )
+    
+    PRINT 'INSERT trigger fired for WINMAIL_RECEIVED - Row Hash: ' + @RowHash
+END
+GO
+
+-- WINMAIL_RECEIVED UPDATE Trigger
+CREATE TRIGGER [trg_WINMAIL_RECEIVED_Update]
+ON [WINMAIL_RECEIVED]
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @ChangedColumns VARCHAR(500) = ''
+    
+    IF UPDATE(EntryDate) SET @ChangedColumns = @ChangedColumns + 'EntryDate, '
+    IF UPDATE(Guid) SET @ChangedColumns = @ChangedColumns + 'Guid, '
+    IF UPDATE(NAME) SET @ChangedColumns = @ChangedColumns + 'NAME, '
+    IF UPDATE(FAXNUM) SET @ChangedColumns = @ChangedColumns + 'FAXNUM, '
+    IF UPDATE(PAGES) SET @ChangedColumns = @ChangedColumns + 'PAGES, '
+    IF UPDATE(FILENAME) SET @ChangedColumns = @ChangedColumns + 'FILENAME, '
+    IF UPDATE(ID) SET @ChangedColumns = @ChangedColumns + 'ID, '
+    IF UPDATE(Note) SET @ChangedColumns = @ChangedColumns + 'Note, '
+    IF UPDATE(SRFaxID) SET @ChangedColumns = @ChangedColumns + 'SRFaxID, '
+    IF UPDATE(SRFaxFileName) SET @ChangedColumns = @ChangedColumns + 'SRFaxFileName, '
+    IF UPDATE(Unread) SET @ChangedColumns = @ChangedColumns + 'Unread, '
+    
+    IF LEN(@ChangedColumns) > 0
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
+    ELSE
+        SET @ChangedColumns = 'Unknown columns'
+    
+    DECLARE @RowData VARCHAR(MAX) = ''
+    DECLARE @RowHash VARCHAR(64)
+    
+    SELECT @RowData = 
+        ISNULL(CAST([EntryDate] AS VARCHAR(20)), 'NULL') + '|' +
+        ISNULL(CAST([Guid] AS VARCHAR(36)), 'NULL') + '|' +
+        ISNULL(CAST([NAME] AS VARCHAR(50)), 'NULL') + '|' +
+        ISNULL(CAST([FAXNUM] AS VARCHAR(50)), 'NULL') + '|' +
+        ISNULL(CAST([PAGES] AS VARCHAR(5)), 'NULL') + '|' +
+        ISNULL(CAST([FILENAME] AS VARCHAR(200)), 'NULL') + '|' +
+        ISNULL(CAST([ID] AS VARCHAR(10)), 'NULL') + '|' +
+        ISNULL(CAST([Note] AS VARCHAR(200)), 'NULL') + '|' +
+        ISNULL(CAST([SRFaxID] AS VARCHAR(100)), 'NULL') + '|' +
+        ISNULL(CAST([SRFaxFileName] AS VARCHAR(300)), 'NULL') + '|' +
+        ISNULL(CAST([Unread] AS VARCHAR(10)), 'NULL')
+    FROM inserted
+    
+    SET @RowHash = [dbo].[GenerateWINMAIL_RECEIVEDRowHash](@RowData)
+    
+    INSERT INTO [dbo].[WINMAIL_RECEIVEDAudit] (
+        [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns], [RowData]
+    )
+    VALUES (
+        @RowHash, 'UPDATE', GETDATE(), SYSTEM_USER, 'Winmail received record was modified', @ChangedColumns, @RowData
+    )
+    
+    PRINT 'UPDATE trigger fired for WINMAIL_RECEIVED - Row Hash: ' + @RowHash + ' - Changed: ' + @ChangedColumns
+END
+GO
+
+-- WINMAIL_RECEIVED DELETE Trigger
+CREATE TRIGGER [trg_WINMAIL_RECEIVED_Delete]
+ON [WINMAIL_RECEIVED]
+AFTER DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @RowData VARCHAR(MAX) = ''
+    DECLARE @RowHash VARCHAR(64)
+    
+    SELECT @RowData = 
+        ISNULL(CAST([EntryDate] AS VARCHAR(20)), 'NULL') + '|' +
+        ISNULL(CAST([Guid] AS VARCHAR(36)), 'NULL') + '|' +
+        ISNULL(CAST([NAME] AS VARCHAR(50)), 'NULL') + '|' +
+        ISNULL(CAST([FAXNUM] AS VARCHAR(50)), 'NULL') + '|' +
+        ISNULL(CAST([PAGES] AS VARCHAR(5)), 'NULL') + '|' +
+        ISNULL(CAST([FILENAME] AS VARCHAR(200)), 'NULL') + '|' +
+        ISNULL(CAST([ID] AS VARCHAR(10)), 'NULL') + '|' +
+        ISNULL(CAST([Note] AS VARCHAR(200)), 'NULL') + '|' +
+        ISNULL(CAST([SRFaxID] AS VARCHAR(100)), 'NULL') + '|' +
+        ISNULL(CAST([SRFaxFileName] AS VARCHAR(300)), 'NULL') + '|' +
+        ISNULL(CAST([Unread] AS VARCHAR(10)), 'NULL')
+    FROM deleted
+    
+    SET @RowHash = [dbo].[GenerateWINMAIL_RECEIVEDRowHash](@RowData)
+    
+    INSERT INTO [dbo].[WINMAIL_RECEIVEDAudit] (
+        [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
+    )
+    VALUES (
+        @RowHash, 'DELETE', GETDATE(), SYSTEM_USER, 'Winmail received record was deleted', @RowData
+    )
+    
+    PRINT 'DELETE trigger fired for WINMAIL_RECEIVED - Row Hash: ' + @RowHash
+END
+GO
+
+PRINT 'Created WINMAIL_RECEIVED table triggers'
+GO
+
+-- =============================================================================
+-- MMR TABLE TRIGGERS
+-- =============================================================================
+
+-- Drop existing triggers if they exist
+IF EXISTS (SELECT * FROM sys.triggers WHERE name = 'trg_MMR_Insert')
+    DROP TRIGGER [trg_MMR_Insert]
+IF EXISTS (SELECT * FROM sys.triggers WHERE name = 'trg_MMR_Update')
+    DROP TRIGGER [trg_MMR_Update]
+IF EXISTS (SELECT * FROM sys.triggers WHERE name = 'trg_MMR_Delete')
+    DROP TRIGGER [trg_MMR_Delete]
+
+-- MMR INSERT Trigger
+CREATE TRIGGER [trg_MMR_Insert]
+ON [MMR]
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @RowData VARCHAR(MAX) = ''
+    DECLARE @RowHash VARCHAR(64)
+    
+    SELECT @RowData = 
+        ISNULL(CAST([MMPHN] AS VARCHAR(13)), 'NULL') + '|' +
+        ISNULL(CAST([MMRX] AS VARCHAR(20)), 'NULL') + '|' +
+        ISNULL(CAST([MMSIG] AS VARCHAR(240)), 'NULL') + '|' +
+        ISNULL(CAST([MMPRN] AS VARCHAR(1)), 'NULL') + '|' +
+        ISNULL(CAST([MMINUSE] AS VARCHAR(1)), 'NULL') + '|' +
+        ISNULL(CAST([MMDRUG] AS VARCHAR(128)), 'NULL') + '|' +
+        ISNULL(CAST([MMDIN] AS VARCHAR(20)), 'NULL') + '|' +
+        ISNULL(CAST([MMSTOPPED] AS VARCHAR(1)), 'NULL') + '|' +
+        ISNULL(CAST([MMSTOPDATE] AS VARCHAR(30)), 'NULL') + '|' +
+        ISNULL(CAST([MMSOURCE] AS VARCHAR(1)), 'NULL') + '|' +
+        ISNULL(CAST([MMPRESCRIBEDBY] AS VARCHAR(60)), 'NULL') + '|' +
+        ISNULL(CAST([MMPNETREVIEWED] AS VARCHAR(10)), 'NULL') + '|' +
+        ISNULL(CAST([MMNONRXREVIEWED] AS VARCHAR(10)), 'NULL') + '|' +
+        ISNULL(CAST([MMNATURALREVIEWED] AS VARCHAR(10)), 'NULL') + '|' +
+        ISNULL(CAST([MMUSEONLYRX] AS VARCHAR(10)), 'NULL') + '|' +
+        ISNULL(CAST([MMOTHER] AS VARCHAR(50)), 'NULL')
+    FROM inserted
+    
+    SET @RowHash = [dbo].[GenerateMMRRowHash](@RowData)
+    
+    INSERT INTO [dbo].[MMRAudit] (
+        [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
+    )
+    VALUES (
+        @RowHash, 'INSERT', GETDATE(), SYSTEM_USER, 'New MMR record added', @RowData
+    )
+    
+    PRINT 'INSERT trigger fired for MMR - Row Hash: ' + @RowHash
+END
+GO
+
+-- MMR UPDATE Trigger
+CREATE TRIGGER [trg_MMR_Update]
+ON [MMR]
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @ChangedColumns VARCHAR(500) = ''
+    
+    IF UPDATE(MMPHN) SET @ChangedColumns = @ChangedColumns + 'MMPHN, '
+    IF UPDATE(MMRX) SET @ChangedColumns = @ChangedColumns + 'MMRX, '
+    IF UPDATE(MMREASON) SET @ChangedColumns = @ChangedColumns + 'MMREASON, '
+    IF UPDATE(MMSIG) SET @ChangedColumns = @ChangedColumns + 'MMSIG, '
+    IF UPDATE(MMNOTES) SET @ChangedColumns = @ChangedColumns + 'MMNOTES, '
+    IF UPDATE(MMPRN) SET @ChangedColumns = @ChangedColumns + 'MMPRN, '
+    IF UPDATE(MMINUSE) SET @ChangedColumns = @ChangedColumns + 'MMINUSE, '
+    IF UPDATE(MMDRUG) SET @ChangedColumns = @ChangedColumns + 'MMDRUG, '
+    IF UPDATE(MMDIN) SET @ChangedColumns = @ChangedColumns + 'MMDIN, '
+    IF UPDATE(MMSTOPPED) SET @ChangedColumns = @ChangedColumns + 'MMSTOPPED, '
+    IF UPDATE(MMSTOPDATE) SET @ChangedColumns = @ChangedColumns + 'MMSTOPDATE, '
+    IF UPDATE(MMSOURCE) SET @ChangedColumns = @ChangedColumns + 'MMSOURCE, '
+    IF UPDATE(MMPRESCRIBEDBY) SET @ChangedColumns = @ChangedColumns + 'MMPRESCRIBEDBY, '
+    IF UPDATE(MMRATIONALE) SET @ChangedColumns = @ChangedColumns + 'MMRATIONALE, '
+    IF UPDATE(MMPNETREVIEWED) SET @ChangedColumns = @ChangedColumns + 'MMPNETREVIEWED, '
+    IF UPDATE(MMNONRXREVIEWED) SET @ChangedColumns = @ChangedColumns + 'MMNONRXREVIEWED, '
+    IF UPDATE(MMNATURALREVIEWED) SET @ChangedColumns = @ChangedColumns + 'MMNATURALREVIEWED, '
+    IF UPDATE(MMUSEONLYRX) SET @ChangedColumns = @ChangedColumns + 'MMUSEONLYRX, '
+    IF UPDATE(MMOTHER) SET @ChangedColumns = @ChangedColumns + 'MMOTHER, '
+    
+    IF LEN(@ChangedColumns) > 0
+        SET @ChangedColumns = RTRIM(LEFT(@ChangedColumns, LEN(@ChangedColumns) - 1))
+    ELSE
+        SET @ChangedColumns = 'Unknown columns'
+    
+    DECLARE @RowData VARCHAR(MAX) = ''
+    DECLARE @RowHash VARCHAR(64)
+    
+    SELECT @RowData = 
+        ISNULL(CAST([MMPHN] AS VARCHAR(13)), 'NULL') + '|' +
+        ISNULL(CAST([MMRX] AS VARCHAR(20)), 'NULL') + '|' +
+        ISNULL(CAST([MMSIG] AS VARCHAR(240)), 'NULL') + '|' +
+        ISNULL(CAST([MMPRN] AS VARCHAR(1)), 'NULL') + '|' +
+        ISNULL(CAST([MMINUSE] AS VARCHAR(1)), 'NULL') + '|' +
+        ISNULL(CAST([MMDRUG] AS VARCHAR(128)), 'NULL') + '|' +
+        ISNULL(CAST([MMDIN] AS VARCHAR(20)), 'NULL') + '|' +
+        ISNULL(CAST([MMSTOPPED] AS VARCHAR(1)), 'NULL') + '|' +
+        ISNULL(CAST([MMSTOPDATE] AS VARCHAR(30)), 'NULL') + '|' +
+        ISNULL(CAST([MMSOURCE] AS VARCHAR(1)), 'NULL') + '|' +
+        ISNULL(CAST([MMPRESCRIBEDBY] AS VARCHAR(60)), 'NULL') + '|' +
+        ISNULL(CAST([MMPNETREVIEWED] AS VARCHAR(10)), 'NULL') + '|' +
+        ISNULL(CAST([MMNONRXREVIEWED] AS VARCHAR(10)), 'NULL') + '|' +
+        ISNULL(CAST([MMNATURALREVIEWED] AS VARCHAR(10)), 'NULL') + '|' +
+        ISNULL(CAST([MMUSEONLYRX] AS VARCHAR(10)), 'NULL') + '|' +
+        ISNULL(CAST([MMOTHER] AS VARCHAR(50)), 'NULL')
+    FROM inserted
+    
+    SET @RowHash = [dbo].[GenerateMMRRowHash](@RowData)
+    
+    INSERT INTO [dbo].[MMRAudit] (
+        [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [ChangedColumns], [RowData]
+    )
+    VALUES (
+        @RowHash, 'UPDATE', GETDATE(), SYSTEM_USER, 'MMR record was modified', @ChangedColumns, @RowData
+    )
+    
+    PRINT 'UPDATE trigger fired for MMR - Row Hash: ' + @RowHash + ' - Changed: ' + @ChangedColumns
+END
+GO
+
+-- MMR DELETE Trigger
+CREATE TRIGGER [trg_MMR_Delete]
+ON [MMR]
+AFTER DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @RowData VARCHAR(MAX) = ''
+    DECLARE @RowHash VARCHAR(64)
+    
+    SELECT @RowData = 
+        ISNULL(CAST([MMPHN] AS VARCHAR(13)), 'NULL') + '|' +
+        ISNULL(CAST([MMRX] AS VARCHAR(20)), 'NULL') + '|' +
+        ISNULL(CAST([MMSIG] AS VARCHAR(240)), 'NULL') + '|' +
+        ISNULL(CAST([MMPRN] AS VARCHAR(1)), 'NULL') + '|' +
+        ISNULL(CAST([MMINUSE] AS VARCHAR(1)), 'NULL') + '|' +
+        ISNULL(CAST([MMDRUG] AS VARCHAR(128)), 'NULL') + '|' +
+        ISNULL(CAST([MMDIN] AS VARCHAR(20)), 'NULL') + '|' +
+        ISNULL(CAST([MMSTOPPED] AS VARCHAR(1)), 'NULL') + '|' +
+        ISNULL(CAST([MMSTOPDATE] AS VARCHAR(30)), 'NULL') + '|' +
+        ISNULL(CAST([MMSOURCE] AS VARCHAR(1)), 'NULL') + '|' +
+        ISNULL(CAST([MMPRESCRIBEDBY] AS VARCHAR(60)), 'NULL') + '|' +
+        ISNULL(CAST([MMPNETREVIEWED] AS VARCHAR(10)), 'NULL') + '|' +
+        ISNULL(CAST([MMNONRXREVIEWED] AS VARCHAR(10)), 'NULL') + '|' +
+        ISNULL(CAST([MMNATURALREVIEWED] AS VARCHAR(10)), 'NULL') + '|' +
+        ISNULL(CAST([MMUSEONLYRX] AS VARCHAR(10)), 'NULL') + '|' +
+        ISNULL(CAST([MMOTHER] AS VARCHAR(50)), 'NULL')
+    FROM deleted
+    
+    SET @RowHash = [dbo].[GenerateMMRRowHash](@RowData)
+    
+    INSERT INTO [dbo].[MMRAudit] (
+        [RowHash], [Operation], [ChangeTime], [UserName], [ChangeDetails], [RowData]
+    )
+    VALUES (
+        @RowHash, 'DELETE', GETDATE(), SYSTEM_USER, 'MMR record was deleted', @RowData
+    )
+    
+    PRINT 'DELETE trigger fired for MMR - Row Hash: ' + @RowHash
+END
+GO
+
+PRINT 'Created MMR table triggers'
+GO
+
+-- =============================================================================
 -- COMPLETION
 -- =============================================================================
 
@@ -901,9 +1286,9 @@ PRINT '- MMR (18,006 records) - Fixed for text data type'
 PRINT '- PRESETMESSAGES (116 records)'
 PRINT '- SIG (524 records)'
 PRINT '- SCANS (638,682 records)'
+PRINT '- WINMAIL_RECEIVED (records count varies)'
 PRINT ''
-PRINT 'Total: 6 tables, 689,465+ records covered'
-PRINT 'WINMAIL_RECEIVED table excluded as requested'
+PRINT 'Total: 7 tables, 689,465+ records covered'
 PRINT ''
 PRINT 'All triggers are ready for use!'
 GO
